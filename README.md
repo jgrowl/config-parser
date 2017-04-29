@@ -4,6 +4,7 @@
 
 ```bash
 curl https://sh.rustup.rs -sSf | sh # install Rust
+cargo test # to run tests
 ```
 
 ### References
