@@ -7,7 +7,7 @@ curl https://sh.rustup.rs -sSf | sh # install Rust
 cargo test # to run tests
 ```
 
-### References
+## References
 
 - [nom macros](http://rust.unhandledexpression.com/nom/index.html)
 
