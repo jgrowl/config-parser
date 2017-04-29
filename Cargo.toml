@@ -1,0 +1,13 @@
+[package]
+name = "parse_slapd_conf"
+version = "0.1.0"
+authors = ["Jonathan Rowlands <jonrowlands83@gmail.com>"]
+
+[dependencies]
+libc = "*"
+nom = "^2.2"
+
+[lib]
+name = "slapd_parser"
+crate_type = ["rlib"]
+path = "src/lib.rs"
