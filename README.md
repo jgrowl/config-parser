@@ -6,6 +6,10 @@
 curl https://sh.rustup.rs -sSf | sh # install Rust
 ```
 
+### References
+
+- [nom macros](http://rust.unhandledexpression.com/nom/index.html)
+
 ## Thanks
 
 - [nom](https://github.com/Geal/nom) as the parsing library
