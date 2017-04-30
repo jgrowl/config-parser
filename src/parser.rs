@@ -21,18 +21,6 @@ fn test_key_value_parser() {
 
 named!(end_of_line, alt!(eof!() | eol));
 
-named!(comment_start, tag!("#"));
-
-#[test]
-fn test_comment_start() {
-    let input = "# hey read this comment".as_bytes();
-    let remaining = " hey read this comment".as_bytes();
-    let consumed = "#".as_bytes();
-    let expected = IResult::Done(remaining, consumed);
-    let actual = comment_start(input);
-    assert_eq!(expected, actual);
-}
-
 named!(comment_line_parser<&str>,
     do_parse!(
         tag_s!("#") >>
