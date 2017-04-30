@@ -44,7 +44,10 @@ named!(comment_line_parser<&str>,
 
 #[test]
 fn test_comment_line_parser() {
-    let empty = &b""[..];
-//    assert_eq!(comment_line_parser("#varname0 varvalue0".as_bytes()), IResult::Done(empty, "varname0"));
-    assert_eq!(comment_line_parser("#varname0 varvalue0\n".as_bytes()), IResult::Done(empty, "varname0 varvalue0"));
+    let input = "#varname0 varvalue0\n".as_bytes();
+    let remaining = "".as_bytes();
+    let consumed = "varname0 varvalue0";
+    let expected = IResult::Done(remaining, consumed);
+    let actual = comment_line_parser(input);
+    assert_eq!(expected, actual);
 }
