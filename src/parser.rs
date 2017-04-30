@@ -22,8 +22,6 @@ fn test_key_value_parser() {
     assert_eq!(expected, actual);
 }
 
-named!(end_of_line, alt!(eof!() | eol));
-
 named!(comment_line_parser<&str>,
     do_parse!(
         tag_s!("#") >>
