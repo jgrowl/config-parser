@@ -6,6 +6,8 @@ authors = ["Jonathan Rowlands <jonrowlands83@gmail.com>"]
 [dependencies]
 libc = "*"
 nom = "^2.2"
+clap = "~2.19.0"
+linked-hash-map = "0.4.1"
 
 [lib]
 name = "slapd_parser"

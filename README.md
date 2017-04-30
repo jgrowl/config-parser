@@ -1,5 +1,6 @@
 # config-parser
 
+
 ## How to Develop
 
 ```bash
@@ -10,6 +11,12 @@ cargo test # to run tests
 ## References
 
 - [nom macros](http://rust.unhandledexpression.com/nom/index.html)
+
+## Usage example
+
+```bash
+cargo run -- --template slapd.conf test-1=yo test-2=yo2 test3=hihi test_4=blah_-test
+```
 
 ## Thanks
 

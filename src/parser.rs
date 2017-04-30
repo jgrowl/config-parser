@@ -36,16 +36,9 @@ fn test_comment_start() {
 named!(comment_line_parser<&str>,
     do_parse!(
         tag_s!("#") >>
-        comment: map_res!(alphanumeric, str::from_utf8) >>
-//        comment: map_res!(take_until!("\n"), str::from_utf8) >>
-//        comment: take_until!("\n") >>
-
-//        terminated!(alphanumeric, end_of_line) >>
+        comment: map_res!(not_line_ending, str::from_utf8) >>
+        opt!(eol) >>
         (comment)
-
-//          terminated!(alphanumeric, end_of_line) >>
-//          str::from_utf8
-
     )
 );
 
@@ -53,5 +46,5 @@ named!(comment_line_parser<&str>,
 fn test_comment_line_parser() {
     let empty = &b""[..];
 //    assert_eq!(comment_line_parser("#varname0 varvalue0".as_bytes()), IResult::Done(empty, "varname0"));
-//    assert_eq!(comment_line_parser("#varname0 varvalue0".as_bytes()), IResult::Done(empty, "varname0 varvalue0"));
+    assert_eq!(comment_line_parser("#varname0 varvalue0\n".as_bytes()), IResult::Done(empty, "varname0 varvalue0"));
 }
