@@ -11,12 +11,15 @@ named!(key_value_parser< &[u8],(&str, &str)>,
         (name, value)
     )
 );
-////        alt!(space? | space?) ~
 
 #[test]
 fn test_key_value_parser() {
-    let empty = &b""[..];
-    assert_eq!(key_value_parser("varname0 varvalue0".as_bytes()), IResult::Done(empty, ("varname0", "varvalue0")));
+    let input = "varname0 varvalue0".as_bytes();
+    let output = ("varname0", "varvalue0");
+    let remaining = &b""[..];
+    let expected = IResult::Done(remaining, output);
+    let actual = key_value_parser(input);
+    assert_eq!(expected, actual);
 }
 
 named!(end_of_line, alt!(eof!() | eol));
