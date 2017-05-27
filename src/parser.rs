@@ -1,63 +1,50 @@
 use std::str;
 
+use std::io;
+use std::io::prelude::*;
+use std::fs::File;
+
 use std::collections::HashMap;
 use std::collections::LinkedList;
 
 use std::str::Utf8Error;
 
 use nom::*;
+use types::*;
 
 
-pub fn from_utf8_option(o: Option<&[u8]>) -> Result<Option<&str>, Utf8Error> {
+pub fn from_utf8_option2(o: Option<&[u8]>) -> Result<Option<String>, Utf8Error> {
     match o {
         None => Result::Ok(None),
         Some(x) => {
             match str::from_utf8(o.unwrap()) {
-                Ok(v) => Result::Ok(Some(v)),
+                Ok(v) => Result::Ok(Some(v.to_string())),
                 Err(e) => Result::Err(e)
             }
         }
     }
 }
 
-fn default_key_value<'a>() -> Out<'a> {
-    Out::KeyValue {
-        whitespace_1: None,
-        key: "",
-        whitespace_2: None,
-        separator: " ",
-        whitespace_3: None,
-        value: "",
-        whitespace_4: None
-    }
-}
+//fn default_key_value<'a>() -> Out<'a> {
+//    Out::KeyValue {
+//        whitespace_1: None,
+//        key: "",
+//        whitespace_2: None,
+//        separator: " ",
+//        whitespace_3: None,
+//        value: "",
+//        whitespace_4: None
+//    }
+//}
 
-#[derive(Debug,PartialEq)]
-enum Out<'a> {
-    Comment {
-        whitespace_1: Option<&'a str>,
-        separator: &'a str,
-        text: Option<&'a str>,
-    },
-
-    KeyValue {
-        whitespace_1: Option<&'a str>,
-        key: &'a str,
-        whitespace_2: Option<&'a str>,
-        separator: &'a str,
-        whitespace_3: Option<&'a str>,
-        value: &'a str,
-        whitespace_4: Option<&'a str>
-    }
-}
 
 named!(comment<Out>,
     do_parse!(
-        whitespace_1: map_res!(opt!(multispace), from_utf8_option)  >>
+        whitespace_1: map_res!(opt!(multispace), from_utf8_option2)  >>
         tag_s!("#") >>
-        text: map_res!(opt!(not_line_ending), from_utf8_option) >>
+        text: map_res!(opt!(not_line_ending), from_utf8_option2) >>
         opt!(eol) >>
-        (Out::Comment{whitespace_1: whitespace_1, separator: "#", text: text})
+        (Out::Comment{whitespace_1: whitespace_1, separator: "#".to_string(), text: text})
     )
 );
 
@@ -66,8 +53,8 @@ fn test_comment() {
     let input = &b"# This is a comment\n"[..];
     let consumed = Out::Comment {
         whitespace_1: None,
-        separator: "#",
-        text: Some(" This is a comment")
+        separator: "#".to_string(),
+        text: Some(" This is a comment".to_string())
     };
     let expected = expected_done(consumed);
     let actual = comment(input);
@@ -76,29 +63,29 @@ fn test_comment() {
 
 named!(key_value<Out>,
     do_parse!(
-        whitespace_1: map_res!(opt!(multispace), from_utf8_option) >>
+        whitespace_1: map_res!(opt!(multispace), from_utf8_option2) >>
         key: map_res!(alt!(alphanumeric | tag_s!("_")), str::from_utf8) >> // Need to support other characters?
-        whitespace_2: map_res!(opt!(multispace), from_utf8_option) >>
+        whitespace_2: map_res!(opt!(multispace), from_utf8_option2) >>
         separator: map_res!(alt!(tag_s!("=") | space), str::from_utf8) >>
-        whitespace_3: map_res!(opt!(multispace), from_utf8_option) >>
+        whitespace_3: map_res!(opt!(multispace), from_utf8_option2) >>
         value: map_res!(alphanumeric, str::from_utf8) >>
-        whitespace_4: map_res!(opt!(complete!(multispace)), from_utf8_option) >>
-        ending: map_res!(opt!(complete!(line_ending)), from_utf8_option) >>
-        (Out::KeyValue{whitespace_1: whitespace_1, key: key, whitespace_2: whitespace_2, separator: separator,
-            whitespace_3: whitespace_3, value: value, whitespace_4: whitespace_4})
+        whitespace_4: map_res!(opt!(complete!(multispace)), from_utf8_option2) >>
+        ending: map_res!(opt!(complete!(line_ending)), from_utf8_option2) >>
+        (Out::KeyValue{whitespace_1: whitespace_1, key: key.to_string(), whitespace_2: whitespace_2, separator: separator.to_string(),
+            whitespace_3: whitespace_3, value: value.to_string(), whitespace_4: whitespace_4})
     )
 );
 
 named!(key_value2<Out>,
     do_parse!(
-        whitespace_1: map_res!(opt!(multispace), from_utf8_option) >>
+        whitespace_1: map_res!(opt!(multispace), from_utf8_option2) >>
         key: map_res!(alt!(alphanumeric | tag_s!("_")), str::from_utf8) >>
         separator: map_res!(multispace, str::from_utf8) >>
         value: map_res!(not_line_ending, str::from_utf8) >>
-        whitespace_4: map_res!(opt!(complete!(multispace)), from_utf8_option) >>
-        ending: map_res!(opt!(complete!(line_ending)), from_utf8_option) >>
-        (Out::KeyValue{whitespace_1: whitespace_1, key: key, whitespace_2: None, separator: separator,
-            whitespace_3: None, value: value, whitespace_4: whitespace_4})
+        whitespace_4: map_res!(opt!(complete!(multispace)), from_utf8_option2) >>
+        ending: map_res!(opt!(complete!(line_ending)), from_utf8_option2) >>
+        (Out::KeyValue{whitespace_1: whitespace_1, key: key.to_string(), whitespace_2: None, separator: separator.to_string(),
+            whitespace_3: None, value: value.to_string(), whitespace_4: whitespace_4})
     )
 );
 
@@ -107,11 +94,11 @@ named!(key_value2<Out>,
 fn test_key_value() {
     let expected = expected_done(Out::KeyValue {
         whitespace_1: None,
-        key: "key",
-        whitespace_2: Some(" "),
-        separator: "=",
-        whitespace_3: Some(" "),
-        value: "value",
+        key: "key".to_string(),
+        whitespace_2: Some(" ".to_string()),
+        separator: "=".to_string(),
+        whitespace_3: Some(" ".to_string()),
+        value: "value".to_string(),
         whitespace_4: None
     });
 
@@ -123,11 +110,11 @@ fn test_key_value() {
 fn test_key_value_underscore_key() {
     let expected = expected_done(Out::KeyValue {
         whitespace_1: None,
-        key: "key",
-        whitespace_2: Some(" "),
-        separator: "=",
-        whitespace_3: Some(" "),
-        value: "value",
+        key: "key".to_string(),
+        whitespace_2: Some(" ".to_string()),
+        separator: "=".to_string(),
+        whitespace_3: Some(" ".to_string()),
+        value: "value".to_string(),
         whitespace_4: None
     });
 
@@ -140,11 +127,11 @@ fn test_key_value_underscore_key() {
 fn test_key_value2() {
     let expected = expected_done(Out::KeyValue {
         whitespace_1: None,
-        key: "key",
+        key: "key".to_string(),
         whitespace_2: None,
-        separator: " ",
+        separator: " ".to_string(),
         whitespace_3: None,
-        value: "value",
+        value: "value".to_string(),
         whitespace_4: None
     });
 
@@ -179,29 +166,29 @@ fn test_key_values() {
     let output = vec!(
                      Out::KeyValue {
                          whitespace_1: None,
-                         key: "key0",
+                         key: "key0".to_string(),
                          whitespace_2: None,
-                         separator: "    ",
+                         separator: "    ".to_string(),
                          whitespace_3: None,
-                         value: "value0",
-                         whitespace_4: Some("\n")
+                         value: "value0".to_string(),
+                         whitespace_4: Some("\n".to_string())
                      },
                      Out::KeyValue {
                          whitespace_1: None,
-                         key: "key1",
+                         key: "key1".to_string(),
                          whitespace_2: None,
-                         separator: "    ",
+                         separator: "    ".to_string(),
                          whitespace_3: None,
-                         value: "value1",
-                         whitespace_4: Some("\n")
+                         value: "value1".to_string(),
+                         whitespace_4: Some("\n".to_string())
                      },
                      Out::KeyValue {
                          whitespace_1: None,
-                         key: "key2",
+                         key: "key2".to_string(),
                          whitespace_2: None,
-                         separator: "    ",
+                         separator: "    ".to_string(),
                          whitespace_3: None,
-                         value: "value2",
+                         value: "value2".to_string(),
                          whitespace_4: None
                      }
                      );
@@ -213,3 +200,49 @@ fn test_key_values() {
 fn expected_done<'a, I>(result: I) -> IResult<&'a [u8], I> {
     IResult::Done(&b""[..], result)
 }
+
+pub fn parse_file<'a>(mut file: File) -> Vec<Out>{
+    let mut contents: Vec<u8> = Vec::new();
+    file.read_to_end(&mut contents).unwrap();
+    return keys_values(&contents[..]).unwrap().1;
+}
+
+//pub fn parse_file<'a>(mut file: File) -> Vec<Out<'a>>{
+//    let mut contents: Vec<u8> = Vec::new();
+//    let _ = file.read_to_end(&mut contents).unwrap();
+//
+//    let kv = keys_values(&contents[..]).unwrap();
+//
+//    return kv.1.to_owned();
+//}
+
+
+//pub fn parse<'a>(mut contents: &Vec<u8>) -> Vec<Out<'a>>{
+////    return keys_values(&contents[..]).unwrap().1;
+//    return keys_values(contents).unwrap().1;
+//}
+
+//pub fn parse_slice
+
+//pub fn parse_file(mut file: File) {
+//    let mut contents: Vec<u8> = Vec::new();
+//    file.read_to_end(&mut contents).unwrap();
+////    parse(contents);
+//}
+
+
+
+//pub fn parse_file(mut outs: Vec<Out>, mut file: File) {
+//    let mut buffer = String::new();
+//    file.read_to_string(&mut buffer);
+//    let bytes = buffer.into_bytes();
+//    outs = keys_values(&bytes).unwrap().1;
+//
+//
+////    let mut buffer: Vec<u8> = vec!();
+////    file.read_to_end(&mut buffer).unwrap();
+////    file.bytes();
+////    let kv = keys_values(&buffer[..]).unwrap().1;
+////    return kv;
+////    return vec!();
+//}

@@ -9,43 +9,8 @@ use std::io::{self, BufReader};
 extern crate linked_hash_map;
 use linked_hash_map::LinkedHashMap;
 
-struct Writer {
-    pub strings: Vec<String>,
-    pub file: Option<String>
-}
-
-impl Writer {
-
-    pub fn new() -> Writer {
-        return Writer{ strings: vec![], file: None }
-    }
-
-    fn push(& mut self, string: String) {
-        self.strings.push(string);
-    }
-
-    fn write(& mut self) {
-        for s in self.strings.clone() {
-            match self.file.clone() {
-                Some(x) => {
-                    // TODO: output to file
-                    unimplemented!();
-                },
-                None => println!("{}", s)
-            }
-        }
-    }
-}
-
-fn is_comment(line: &String) -> bool {
-    if line.is_empty() {
-        return false;
-    }
-
-    let first = line.chars().nth(0).unwrap();
-    // todo: add more complex logic here. support different types of comments
-    return first == '#';
-}
+extern crate slapd_parser;
+use slapd_parser::types::*;
 
 fn main() {
     let matches = App::new("varconfig")
@@ -63,64 +28,22 @@ fn main() {
 //    "-c, --config=[FILE] 'Sets a custom config file'
 //    <INPUT>              'Sets the input file to use'
 
-
-    // Gets a value for config if supplied by user, or defaults to "default.conf"
-//    let config = matches.value_of("config").unwrap_or("default.conf");
-//    println!("Value for config: {}", config);
-
-    // Calling .unwrap() is safe here because "INPUT" is required (if "INPUT" wasn't
-    // required we could have used an 'if let' to conditionally get the value)
-//    println!("Using input file: {}", matches.value_of("INPUT").unwrap());
-
-    let mut writer = Writer::new();
+    let input_vars = parse_input_vars(matches.values_of("INPUT"));
+    let output = parse_output(matches.value_of("output"));
+    let mut config: Config = Config::new();
+//    config.input_variables = input_vars;
 
     if let Some(o) = matches.value_of("template") {
         let mut file = File::open(o).expect("Unable to open the file");
-        let f = BufReader::new(file);
+        let mut config = Config {
+            template_lines: Some(slapd_parser::parse_file(file)),
+            input_variables: input_vars,
+            output_file: output
 
-        for line in f.lines() {
-            let mut l = line.unwrap();
+        };
 
-            if l.is_empty() {
-                // blank line
-                writer.push(l);
-            } else {
-                if is_comment(&l) {
-                    // todo: figure out how to determine if actual comment or disabled option?
-                    writer.push(l);
-                } else {
-                    let mut tokens: Vec<&str> = l.split_whitespace().collect();
-                    let values = tokens.split_off(1);
-                    let key = tokens[0];
-                    writer.push(format!("{} {}", key, values.join(" ")));
-                }
-            }
-        }
-//        let mut contents = String::new();
-//        file.read_to_string(&mut contents).expect("Unable to read the file");
-//        println!("{}", contents);
+        config.output();
     }
-
-
-
-    if let Some(o) = matches.value_of("output") {
-        writer.file = Some(o.to_string());
-    }
-
-//    if let Some(kv_strings) = matches.values_of("INPUT") {
-//        let test = kv_strings
-//            .map(|kv_string| kv_string.split('='))
-//            .map(|mut kv| (kv.next().unwrap().into(),
-//                           kv.next().unwrap().into()))
-//            .collect::<LinkedHashMap<String, String>>();
-//
-//        for (k, v) in test {
-//            writer.push(format!("{} {}", k, v));
-//        }
-//    }
-
-    writer.write();
-
 
 //    // Vary the output based on how many times the user used the "verbose" flag
 //    // (i.e. 'myprog -v -v -v' or 'myprog -vvv' vs 'myprog -v'
@@ -130,4 +53,27 @@ fn main() {
 //        2 => println!("Tons of verbose info"),
 //        3 | _ => println!("Don't be crazy"),
 //    }
+}
+
+fn parse_output(output_path: Option<&str>) -> Option<File> {
+    match output_path {
+        None => return None,
+        Some(file_path) => {
+            let f = File::open(file_path).expect("Unable to open the file");
+            return Some(f)
+        }
+    }
+}
+
+fn parse_input_vars(input: Option<clap::Values>) -> LinkedHashMap<String, String> {
+    match input {
+        None => return LinkedHashMap::new(),
+        Some(kv_strings) => {
+            kv_strings
+                .map(|kv_string| kv_string.split('='))
+                .map(|mut kv| (kv.next().unwrap().into(),
+                               kv.next().unwrap().into()))
+                .collect::<LinkedHashMap<String, String>>()
+        }
+    }
 }
