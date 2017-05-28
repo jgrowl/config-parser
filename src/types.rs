@@ -39,10 +39,10 @@ impl Config {
         for line in self.template_lines.clone().unwrap() {
             match line {
                 Out::Comment { whitespace_1, separator, text } => {
-                    println!("{}", text.unwrap());
+                    println!("{}{}{}", whitespace_1.unwrap_or("".to_string()), separator.to_string(), text.unwrap());
                 },
                 Out::KeyValue { whitespace_1, key, whitespace_2, separator, whitespace_3, value, whitespace_4 } => {
-                    println!("`{:?}` `{:?}`", key, value);
+                    print!("{}{}{}{}{}{}{}", whitespace_1.unwrap_or("".to_string()), key, whitespace_2.unwrap_or("".to_string()), separator, whitespace_3.unwrap_or("".to_string()), value, whitespace_4.unwrap_or("".to_string()));
                 }
             }
         }

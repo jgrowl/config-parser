@@ -1,15 +1,15 @@
 extern crate clap;
-use std::collections::HashMap;
-use clap::{Arg, App};
+
+use clap::{App};
 
 use std::fs::File;
-use std::io::prelude::*;
-use std::io::{self, BufReader};
 
 extern crate linked_hash_map;
+
 use linked_hash_map::LinkedHashMap;
 
 extern crate slapd_parser;
+
 use slapd_parser::types::*;
 
 fn main() {
@@ -25,15 +25,15 @@ fn main() {
             ")
         .get_matches();
 
-//    "-c, --config=[FILE] 'Sets a custom config file'
-//    <INPUT>              'Sets the input file to use'
+    //    "-c, --config=[FILE] 'Sets a custom config file'
+    //    <INPUT>              'Sets the input file to use'
 
     let input_vars = parse_input_vars(matches.values_of("INPUT"));
     let output = parse_output(matches.value_of("output"));
     let mut config: Config = Config::new();
 
     if let Some(o) = matches.value_of("template") {
-        let mut file = File::open(o).expect("Unable to open the file");
+        let file = File::open(o).expect("Unable to open the file");
         config = Config {
             template_lines: Some(slapd_parser::parse_file(file)),
             input_variables: input_vars,
@@ -43,14 +43,14 @@ fn main() {
 
     config.output();
 
-//    // Vary the output based on how many times the user used the "verbose" flag
-//    // (i.e. 'myprog -v -v -v' or 'myprog -vvv' vs 'myprog -v'
-//    match matches.occurrences_of("v") {
-//        0 => println!("No verbose info"),
-//        1 => println!("Some verbose info"),
-//        2 => println!("Tons of verbose info"),
-//        3 | _ => println!("Don't be crazy"),
-//    }
+    //    // Vary the output based on how many times the user used the "verbose" flag
+    //    // (i.e. 'myprog -v -v -v' or 'myprog -vvv' vs 'myprog -v'
+    //    match matches.occurrences_of("v") {
+    //        0 => println!("No verbose info"),
+    //        1 => println!("Some verbose info"),
+    //        2 => println!("Tons of verbose info"),
+    //        3 | _ => println!("Don't be crazy"),
+    //    }
 }
 
 fn parse_output(output_path: Option<&str>) -> Option<File> {

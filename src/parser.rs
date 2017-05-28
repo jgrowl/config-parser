@@ -1,12 +1,6 @@
 use std::str;
-
-use std::io;
 use std::io::prelude::*;
 use std::fs::File;
-
-use std::collections::HashMap;
-use std::collections::LinkedList;
-
 use std::str::Utf8Error;
 
 use nom::*;
@@ -16,7 +10,7 @@ use types::*;
 pub fn from_utf8_option2(o: Option<&[u8]>) -> Result<Option<String>, Utf8Error> {
     match o {
         None => Result::Ok(None),
-        Some(x) => {
+        Some(_) => {
             match str::from_utf8(o.unwrap()) {
                 Ok(v) => Result::Ok(Some(v.to_string())),
                 Err(e) => Result::Err(e)
@@ -24,19 +18,6 @@ pub fn from_utf8_option2(o: Option<&[u8]>) -> Result<Option<String>, Utf8Error> 
         }
     }
 }
-
-//fn default_key_value<'a>() -> Out<'a> {
-//    Out::KeyValue {
-//        whitespace_1: None,
-//        key: "",
-//        whitespace_2: None,
-//        separator: " ",
-//        whitespace_3: None,
-//        value: "",
-//        whitespace_4: None
-//    }
-//}
-
 
 named!(comment<Out>,
     do_parse!(
@@ -107,6 +88,7 @@ fn test_key_value() {
     assert_eq!(expected, actual);
 }
 
+#[test]
 fn test_key_value_underscore_key() {
     let expected = expected_done(Out::KeyValue {
         whitespace_1: None,
