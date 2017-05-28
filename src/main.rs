@@ -31,19 +31,17 @@ fn main() {
     let input_vars = parse_input_vars(matches.values_of("INPUT"));
     let output = parse_output(matches.value_of("output"));
     let mut config: Config = Config::new();
-//    config.input_variables = input_vars;
 
     if let Some(o) = matches.value_of("template") {
         let mut file = File::open(o).expect("Unable to open the file");
-        let mut config = Config {
+        config = Config {
             template_lines: Some(slapd_parser::parse_file(file)),
             input_variables: input_vars,
             output_file: output
-
         };
-
-        config.output();
     }
+
+    config.output();
 
 //    // Vary the output based on how many times the user used the "verbose" flag
 //    // (i.e. 'myprog -v -v -v' or 'myprog -vvv' vs 'myprog -v'
